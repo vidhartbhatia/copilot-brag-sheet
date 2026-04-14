@@ -1,0 +1,12 @@
+{
+  "name": "copilot-brag-sheet",
+  "description": "Auto-track AI coding sessions into a structured work impact log. Zero dependencies, local-first.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Vidhart Bhatia"
+  },
+  "homepage": "https://github.com/vidhartbhatia/copilot-brag-sheet",
+  "repository": "https://github.com/vidhartbhatia/copilot-brag-sheet",
+  "license": "MIT",
+  "keywords": ["copilot-cli", "work-tracker", "brag-sheet", "impact-log", "developer-productivity", "local-first"]
+}
