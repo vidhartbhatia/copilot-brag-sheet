@@ -155,7 +155,7 @@ Running `generate_work_log` produces a Markdown file like this:
 ## Week of 2025-04-14
 
 ### 🚀 PRs & Features
-- **[copilot-brag-sheet] Built and published v2 with modular architecture** — 84 tests, cross-platform CI
+- **[copilot-brag-sheet] Built and published v2 with modular architecture** — 107 tests, cross-platform CI
 
 ### 🏗️ Infrastructure
 - **[auth-service] Refactored auth to managed identity** — Eliminated 3 secret rotation incidents/quarter
@@ -179,7 +179,7 @@ Here's your recent work:
 
 ## Week of 2025-04-14
 ### 🚀 PRs & Features
-- **Built and published copilot-brag-sheet v2** — modular architecture, 84 tests
+- **Built and published copilot-brag-sheet v2** — modular architecture, 107 tests
 
 ### 🏗️ Infrastructure  
 - **Refactored auth service to managed identity** — eliminated secret rotation incidents
@@ -266,6 +266,10 @@ Place a `config.json` in your data directory to customize:
   ],
   "output": {
     "includeSessionLog": true
+  },
+  "git": {
+    "enabled": true,
+    "push": false
   }
 }
 ```
@@ -274,6 +278,9 @@ Place a `config.json` in your data directory to customize:
 |-------|------|-------------|
 | `categories` | array | Custom categories **added** to the built-in set |
 | `output.includeSessionLog` | boolean | Include raw session activity table in work log |
+| `output.defaultFormat` | string | Output format for entries (default: `"bullets"`) |
+| `git.enabled` | boolean | Enable local git history for data directory |
+| `git.push` | boolean | Auto-push to a remote git repo |
 | `preset` | string | Preset profile — currently `"microsoft"` (see below) |
 
 ### Built-in Categories
@@ -384,7 +391,7 @@ Atomic writes (tmp → fsync → rename) prevent corruption from sync conflicts.
 ```bash
 git clone https://github.com/vidhartbhatia/copilot-brag-sheet.git
 cd copilot-brag-sheet
-npm test        # 84 tests, ~1s
+npm test        # 107 tests, ~1s
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.

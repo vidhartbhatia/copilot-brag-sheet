@@ -23,7 +23,7 @@ Complete rewrite with modular architecture, comprehensive testing, and cross-pla
 - **Emergency shutdown saves** — captures session state on unexpected exit
 - **Orphan session recovery** — detects stale sessions from crashed processes
 - **Cloud sync support** — `WORK_TRACKER_DIR` env var for OneDrive/Dropbox/iCloud
-- **84 tests** covering all modules and extension logic
+- **107 tests** covering all modules and extension logic
 - **Zero runtime dependencies** — Node.js 18+ only
 
 ### Changed (from v0.x)

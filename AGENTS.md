@@ -1,6 +1,6 @@
 # copilot-brag-sheet — Agent Handoff
 
-> **Status**: Phases 0–2 complete. Start on Phase 3: `extension.mjs`.
+> **Status**: Phases 0–5 complete. Extension, docs, and CI done. Phase 6 (final review) in progress.
 
 ---
 
@@ -15,7 +15,7 @@ with on-demand markdown rendering. Cross-platform (Windows/macOS/Linux), Node 18
 
 ## Current State
 
-### ✅ Done (Phases 0–2)
+### ✅ Done (Phases 0–5)
 
 | File | Status |
 |------|--------|
@@ -26,16 +26,18 @@ with on-demand markdown rendering. Cross-platform (Windows/macOS/Linux), Node 18
 | `lib/storage.mjs` | ✅ tested |
 | `lib/records.mjs` | ✅ tested |
 | `lib/render.mjs` | ✅ tested |
-| `test/*.test.mjs` | ✅ 50/50 passing |
+| `extension.mjs` | ✅ tested |
+| `lib/git-backup.mjs` | ✅ tested |
+| `test/*.test.mjs` | ✅ 107/107 passing |
+| `README.md` | ✅ |
+| `CONTRIBUTING.md` | ✅ |
+| `CHANGELOG.md` | ✅ |
+| `ROADMAP.md` | ✅ |
 
 Verify with: `npm test`
 
 ### ❌ Not Started
 
-- `extension.mjs` — **start here** (Phase 3)
-- `lib/git-backup.mjs` — optional, defer to Phase 4
-- `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `ROADMAP.md` — Phase 5
-- CI workflow, issue templates — Phase 5
 - Cross-model review + force-push publish — Phase 6
 
 ---
@@ -207,11 +209,9 @@ Custom categories allowed via config.json.
 
 ---
 
-## After Building extension.mjs
+## Remaining Work
 
-1. Run `npm test` — all 50+ tests must still pass
-2. Phase 5 (docs): README, CONTRIBUTING, CHANGELOG, ROADMAP
-3. Phase 6: cross-model review (GPT for code, Opus for docs), then force-push to GitHub as clean v1.0
+1. Phase 6: cross-model review (GPT for code, Opus for docs), then force-push to GitHub as clean v1.0
 
 ---
 
