@@ -28,7 +28,7 @@ Plus three tools the agent can call on your behalf:
 
 ### 1. Install
 
-**One-liner (recommended):**
+**One-liner:**
 
 ```bash
 # macOS / Linux
@@ -38,7 +38,7 @@ curl -sL https://raw.githubusercontent.com/vidhartbhatia/copilot-brag-sheet/main
 irm https://raw.githubusercontent.com/vidhartbhatia/copilot-brag-sheet/main/install.ps1 | iex
 ```
 
-**Or clone and install:**
+**Or clone and install (includes interactive setup wizard):**
 
 ```bash
 git clone https://github.com/vidhartbhatia/copilot-brag-sheet.git
@@ -47,16 +47,10 @@ cd copilot-brag-sheet
 # .\install.ps1       # Windows
 ```
 
-**Or manual clone** (if you prefer full control):
+The setup wizard will ask a few optional questions (Microsoft preset, git history, remote sync). You can re-run it anytime:
 
 ```bash
-# macOS / Linux
-git clone https://github.com/vidhartbhatia/copilot-brag-sheet.git \
-  ~/.copilot/extensions/copilot-brag-sheet
-
-# Windows (PowerShell)
-git clone https://github.com/vidhartbhatia/copilot-brag-sheet.git `
-  "$env:USERPROFILE\.copilot\extensions\copilot-brag-sheet"
+node ~/.copilot/extensions/copilot-brag-sheet/bin/setup.mjs
 ```
 
 After installing, run `/clear` in the Copilot CLI or restart it to load the extension.

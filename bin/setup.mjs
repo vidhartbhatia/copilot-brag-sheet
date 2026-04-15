@@ -1,112 +1,188 @@
 #!/usr/bin/env node
 
 /**
- * Setup script for copilot-brag-sheet.
- * Run with: npx copilot-brag-sheet
+ * Interactive setup wizard for copilot-brag-sheet.
  *
- * Copies the extension into the Copilot CLI extensions directory.
+ * Run anytime to configure or reconfigure:
+ *   node ~/.copilot/extensions/copilot-brag-sheet/bin/setup.mjs
  */
 
-import { existsSync, mkdirSync, cpSync, writeFileSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { homedir, platform } from "node:os";
 import { fileURLToPath } from "node:url";
 import { createInterface } from "node:readline";
+import { execFileSync } from "node:child_process";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const PACKAGE_ROOT = join(__dirname, "..");
-const EXT_NAME = "copilot-brag-sheet";
+const LIB_DIR = join(__dirname, "..", "lib");
 
-// Resolve Copilot extensions directory
-const copilotHome = process.env.COPILOT_HOME || join(homedir(), ".copilot");
-const targetDir = join(copilotHome, "extensions", EXT_NAME);
+// Import data dir detection from the extension's own lib (single source of truth)
+const { detectDataDir } = await import(join(LIB_DIR, "paths.mjs"));
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
 
 function ask(question) {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      rl.close();
-      resolve(answer.trim());
-    });
+    rl.question(question, (answer) => { rl.close(); resolve(answer.trim()); });
   });
 }
 
-function getDataDir() {
-  if (process.env.WORK_TRACKER_DIR) return process.env.WORK_TRACKER_DIR;
-  const p = platform();
-  if (p === "win32") {
-    return join(process.env.LOCALAPPDATA || join(homedir(), "AppData", "Local"), EXT_NAME);
-  }
-  if (p === "darwin") {
-    return join(homedir(), "Library", "Application Support", EXT_NAME);
-  }
-  return join(process.env.XDG_DATA_HOME || join(homedir(), ".local", "share"), EXT_NAME);
+function green(text) { return `\x1b[32m${text}\x1b[0m`; }
+function bold(text)  { return `\x1b[1m${text}\x1b[0m`; }
+function dim(text)   { return `\x1b[2m${text}\x1b[0m`; }
+
+function git(args, cwd) {
+  try {
+    return execFileSync("git", args, {
+      cwd, encoding: "utf8", timeout: 5000,
+      windowsHide: true, stdio: ["ignore", "pipe", "pipe"],
+    }).trim();
+  } catch { return null; }
 }
 
+// ── Main ────────────────────────────────────────────────────────────────────
+
 async function main() {
-  console.log(`\nInstalling ${EXT_NAME}...\n`);
+  const dataDir = detectDataDir();
+  mkdirSync(dataDir, { recursive: true });
 
-  // Verify we have the source files
-  if (!existsSync(join(PACKAGE_ROOT, "extension.mjs"))) {
-    console.error("Error: extension.mjs not found. Is the package intact?");
-    process.exit(1);
+  const configPath = join(dataDir, "config.json");
+  let config = {};
+
+  // Preserve existing config
+  if (existsSync(configPath)) {
+    try {
+      config = JSON.parse(readFileSync(configPath, "utf8"));
+    } catch { /* start fresh */ }
   }
 
-  // Clean previous install
-  if (existsSync(targetDir)) {
-    console.log("Removing previous installation...");
-    // Use recursive rm via cpSync overwrite
-    const { rmSync } = await import("node:fs");
-    rmSync(targetDir, { recursive: true, force: true });
-  }
-
-  // Copy extension files
-  mkdirSync(join(targetDir, "lib"), { recursive: true });
-
-  const filesToCopy = [
-    "extension.mjs",
-    "package.json",
-  ];
-
-  for (const file of filesToCopy) {
-    const src = join(PACKAGE_ROOT, file);
-    if (existsSync(src)) {
-      cpSync(src, join(targetDir, file));
-    }
-  }
-
-  // Copy lib modules
-  const libDir = join(PACKAGE_ROOT, "lib");
-  if (existsSync(libDir)) {
-    cpSync(libDir, join(targetDir, "lib"), { recursive: true });
-  }
-
-  console.log(`✅ Installed to: ${targetDir}\n`);
-
-  // Optional Microsoft preset
-  if (process.stdin.isTTY) {
-    const response = await ask("Are you a Microsoft employee? (enables Connect review formatting) [y/N] ");
-    if (/^[Yy]$/.test(response)) {
-      const dataDir = getDataDir();
-      mkdirSync(dataDir, { recursive: true });
-      const configPath = join(dataDir, "config.json");
-
-      // Merge with existing config if present
-      let existing = {};
-      if (existsSync(configPath)) {
-        try { existing = JSON.parse(readFileSync(configPath, "utf8")); } catch { /* ignore */ }
-      }
-      existing.preset = "microsoft";
-      writeFileSync(configPath, JSON.stringify(existing, null, 2));
-      console.log(`  ✅ Microsoft preset enabled (${configPath})\n`);
-    }
-  }
-
-  console.log("Next steps:");
-  console.log("  1. Run /clear in the Copilot CLI or restart it");
-  console.log('  2. Start a session — you\'ll see "📊 Work logger active"');
   console.log("");
-  console.log(`To uninstall: rm -rf "${targetDir}"`);
+  console.log(bold("📋 copilot-brag-sheet — Setup"));
+  console.log(dim("  All questions are optional — press Enter to skip\n"));
+
+  // ── Microsoft preset ────────────────────────────────────────────────────
+  const currentPreset = config.preset === "microsoft" ? " (currently enabled)" : "";
+  const msResponse = await ask(`  Are you a Microsoft employee?${currentPreset} [y/N] `);
+  if (/^[Yy]$/.test(msResponse)) {
+    config.preset = "microsoft";
+    console.log(green("  ✅ Connect review formatting enabled"));
+  } else if (msResponse !== "" && config.preset === "microsoft") {
+    delete config.preset;
+    console.log("  Preset removed");
+  }
+
+  // ── Git version history ─────────────────────────────────────────────────
+  if (!config.git) config.git = {};
+  const gitExists = existsSync(join(dataDir, ".git"));
+  const gitDefault = gitExists ? "already enabled" : "Y/n";
+
+  console.log("");
+  const gitResponse = await ask(`  Enable git version history for your work log? [${gitDefault}] `);
+  const wantsGit = gitExists || !/^[Nn]$/.test(gitResponse);
+
+  if (wantsGit) {
+    config.git.enabled = true;
+
+    if (!gitExists) {
+      // Initialize git repo
+      const initResult = git(["init", "-b", "main"], dataDir);
+      if (initResult !== null) {
+        // Create .gitignore
+        writeFileSync(join(dataDir, ".gitignore"), [
+          "# Auto-generated by copilot-brag-sheet",
+          "sessions/",
+          "errors.log",
+          "*.lock",
+          "*.tmp.*",
+          "",
+        ].join("\n"));
+
+        // Create data README
+        writeFileSync(join(dataDir, "README.md"), [
+          "# Work Log Data",
+          "",
+          "Managed by [copilot-brag-sheet](https://github.com/vidhartbhatia/copilot-brag-sheet).",
+          "",
+          "- `entries/` — Your saved work accomplishments",
+          "- `config.json` — Your preferences",
+          "- `work-log.md` — Generated work log",
+          "",
+        ].join("\n"));
+
+        // Initial commit
+        git(["add", "-A"], dataDir);
+        git(["commit", "-m", "init: copilot-brag-sheet data"], dataDir);
+        console.log(green("  ✅ Git initialized"));
+      } else {
+        console.log("  ⚠️  Git init failed — skipping");
+      }
+    } else {
+      console.log(green("  ✅ Git already initialized"));
+    }
+
+    // ── Remote sync ─────────────────────────────────────────────────────
+    const hasRemote = git(["remote", "get-url", "origin"], dataDir);
+    if (hasRemote) {
+      console.log(green(`  ✅ Remote: ${hasRemote}`));
+      config.git.push = true;
+    } else {
+      console.log("");
+      console.log(dim("  To sync your work log across machines, you can connect a private repo."));
+      console.log(dim("  Create one first if needed:"));
+      console.log(dim("    gh repo create my-work-log --private   (GitHub CLI)"));
+      console.log(dim("    Or: github.com/new → set to Private"));
+      console.log("");
+      const remoteUrl = await ask("  Paste repo URL (or Enter to skip): ");
+      if (remoteUrl) {
+        const addResult = git(["remote", "add", "origin", remoteUrl], dataDir);
+        if (addResult !== null) {
+          config.git.push = true;
+          // Try initial push to verify
+          const pushResult = git(["push", "-u", "origin", "main"], dataDir);
+          if (pushResult !== null) {
+            console.log(green(`  ✅ Connected and synced to ${remoteUrl}`));
+          } else {
+            console.log(green(`  ✅ Remote added: ${remoteUrl}`));
+            console.log("");
+            console.log(dim("     ⚠️  Initial push failed — likely an auth issue."));
+            console.log(dim("     Fix with one of:"));
+            console.log(dim("       gh auth login                    (GitHub CLI)"));
+            console.log(dim("       git config credential.helper store (HTTPS)"));
+            console.log(dim("       Use git@github.com:... URL       (SSH)"));
+            console.log(dim("     Push will retry automatically on next save."));
+          }
+        } else {
+          console.log("  ⚠️  Failed to add remote — you can set it up later:");
+          console.log(dim(`     cd ${dataDir} && git remote add origin <url>`));
+        }
+      } else {
+        config.git.push = false;
+        console.log(dim("  Local-only — you can add a remote anytime:"));
+        console.log(dim(`     cd ${dataDir} && git remote add origin <url>`));
+      }
+    }
+  } else {
+    config.git.enabled = false;
+    config.git.push = false;
+    console.log(dim("  Git disabled"));
+  }
+
+  // ── Save config ───────────────────────────────────────────────────────
+  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n");
+
+  // ── Done ──────────────────────────────────────────────────────────────
+  console.log("");
+  console.log(green(bold("🎉 Setup complete!")));
+  console.log("");
+  console.log("  Next steps:");
+  console.log("    1. Run /clear in Copilot CLI (or restart it)");
+  console.log("    2. Say \"brag\" to save an accomplishment");
+  console.log("    3. Say \"review my work\" to see your log");
+  console.log("");
+  console.log(dim(`  Data:   ${dataDir}`));
+  console.log(dim(`  Config: ${configPath}`));
+  console.log("");
 }
 
 main().catch((err) => {
