@@ -344,9 +344,9 @@ Review my merged GitHub PRs since December and save the impactful ones.
 
 The extension doesn't do the scanning — **Copilot CLI is the backfill tool**. The extension just stores whatever it produces. See the full **[Backfill Guide](docs/backfill-guide.md)** for source-by-source instructions covering Copilot sessions, VS Code Chat, ADO PRs, GitHub PRs, git commits, ICM incidents, and Teams/M365.
 
-## Microsoft / Connect Reviews
+## Microsoft Employees (Connect / Performance Reviews)
 
-For Microsoft employees, add a one-line preset to get Connect-friendly framing:
+If you're at Microsoft, a one-line preset gives you Connect-optimized framing:
 
 ```json
 { "preset": "microsoft" }
@@ -381,6 +381,38 @@ export WORK_TRACKER_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs/work
 ```
 
 Atomic writes (tmp → fsync → rename) prevent corruption from sync conflicts.
+
+## Update
+
+Re-run the install script to update to the latest version:
+
+```bash
+# macOS / Linux
+curl -sL https://raw.githubusercontent.com/vidhartbhatia/copilot-brag-sheet/main/install.sh | bash
+
+# Windows (PowerShell)
+irm https://raw.githubusercontent.com/vidhartbhatia/copilot-brag-sheet/main/install.ps1 | iex
+```
+
+Or if you cloned the repo:
+
+```bash
+cd copilot-brag-sheet && git pull && ./install.sh
+```
+
+Your config and data are never touched — only the extension files are replaced.
+
+## Uninstall
+
+```bash
+# macOS / Linux
+rm -rf ~/.copilot/extensions/copilot-brag-sheet
+
+# Windows (PowerShell)
+Remove-Item "$env:USERPROFILE\.copilot\extensions\copilot-brag-sheet" -Recurse -Force
+```
+
+Your data stays in the OS app-data directory — delete it manually if you want a full removal.
 
 ## Requirements
 

@@ -94,7 +94,9 @@ Focus on feature branches that were merged to main.
 
 ---
 
-## From ICM / Incident History
+## From ICM / Incident History (Microsoft-internal)
+
+> These prompts require the ICM MCP server, available to Microsoft employees.
 
 If you have the ICM MCP server connected:
 
@@ -109,7 +111,9 @@ Find ICM incidents I mitigated in the last quarter and log them as on-call wins.
 
 ---
 
-## From Teams / Microsoft 365
+## From Teams / Microsoft 365 (Microsoft-internal)
+
+> These prompts require the WorkIQ skill or M365 Copilot, available to Microsoft employees.
 
 With the WorkIQ skill or M365 Copilot:
 
