@@ -94,7 +94,8 @@ Agent: [calls generate_work_log → writes work-log.md]
 
 ## Examples
 
-### What a session record looks like
+<details>
+<summary><strong>What a session record looks like</strong> (auto-captured JSON)</summary>
 
 Every Copilot CLI session automatically produces a JSON record like this:
 
@@ -117,6 +118,8 @@ Every Copilot CLI session automatically produces a JSON record like this:
 ```
 
 You don't write these — they're captured automatically in the background.
+
+</details>
 
 ### What a brag sheet entry looks like
 
@@ -191,7 +194,8 @@ example of reducing operational burden — want me to help frame it as a
 business impact statement?
 ```
 
-### Microsoft preset in action
+<details>
+<summary><strong>Microsoft preset in action</strong></summary>
 
 With `{ "preset": "microsoft" }` in your config, the AI automatically frames entries for Connect:
 
@@ -210,6 +214,8 @@ Agent: I'll frame this for Connect. Here's what I'd save:
   This aligns well with your Core Priority around operational excellence.
   Want me to save this?
 ```
+
+</details>
 
 ## How It Works
 
@@ -413,6 +419,44 @@ Remove-Item "$env:USERPROFILE\.copilot\extensions\copilot-brag-sheet" -Recurse -
 ```
 
 Your data stays in the OS app-data directory — delete it manually if you want a full removal.
+
+## FAQ
+
+<details>
+<summary><strong>Does this send my data anywhere?</strong></summary>
+
+No. All data is stored locally in your OS app-data directory. Zero telemetry, zero network calls. The extension has zero runtime dependencies. If you enable git push, data goes only to a remote you configure.
+</details>
+
+<details>
+<summary><strong>Where is my data stored?</strong></summary>
+
+| OS | Path |
+|----|------|
+| Windows | `%LOCALAPPDATA%\copilot-brag-sheet\` |
+| macOS | `~/Library/Application Support/copilot-brag-sheet/` |
+| Linux | `${XDG_DATA_HOME:-~/.local/share}/copilot-brag-sheet/` |
+
+Override with `WORK_TRACKER_DIR` environment variable.
+</details>
+
+<details>
+<summary><strong>Why don't I see "Work logger active"?</strong></summary>
+
+The message appears on your first interaction in a session (not on `/clear`). Type anything and it should appear. If it doesn't, check that the extension is installed at `~/.copilot/extensions/copilot-brag-sheet/extension.mjs`.
+</details>
+
+<details>
+<summary><strong>Can I use copilot plugin install?</strong></summary>
+
+No. `copilot plugin install` only loads declarative plugins (skills, agents, MCP). This extension uses `joinSession()` which requires files in `~/.copilot/extensions/`. Use the install scripts instead.
+</details>
+
+<details>
+<summary><strong>How do I move data between machines?</strong></summary>
+
+Enable git backup in your config, add a remote repo, and your entries sync automatically. Or point `WORK_TRACKER_DIR` to a cloud-synced folder (OneDrive, Dropbox, iCloud).
+</details>
 
 ## Requirements
 
